@@ -60,6 +60,7 @@
 #define HEURISTIC_SMBX2MAGLX3       "Super Mario Bros. X2 - (2.0.0 bMAGLX3)"
 #define HEURISTIC_SMBX2PAL          "Super Mario Bros. X2 - (2.0.0 PAL)"
 #define HEURISTIC_SMBX2b4           "Super Mario Bros. X2 - (2.0.0 b4)"
+#define HEURISTIC_SMBX2R            "Super Mario Bros. X2R"
 
 
 /**
@@ -325,6 +326,11 @@ static bool getLunaHeuristicCapabilities(LunaLuaCapabilities &caps, const QStrin
             return true;
         }
         else if(gt.indexOf(HEURISTIC_SMBX2b4) >= 0)
+        {
+            fillCapsBeta4(caps);
+            return true;
+        }
+        else if(gt.indexOf(HEURISTIC_SMBX2R) >= 0)
         {
             fillCapsBeta4(caps);
             return true;
