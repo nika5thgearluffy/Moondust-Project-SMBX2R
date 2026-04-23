@@ -1860,12 +1860,12 @@ bool LunaTesterEngine::doTestWorldFile(const QString &worldFile)
         return false;
     }
 
-    if(!m_caps.features.contains("WLDX") && (wld.meta.RecentFormat != WorldData::SMBX64))
+    if(!m_caps.features.contains("WLDX") && (wld.meta.RecentFormat != WorldData::SMBX64) && (wld.meta.RecentFormat != WorldData::PGEX))
     {
         QMessageBox::warning(m_w,
                              "LunaTester",
                              tr("Cannot launch the episode because the world map file is saved in an unsupported format. "
-                                "Please save the world map in the SMBX64-WLD format."),
+                                "Please save the world map in either the SMBX64-WLD format, or the PGEX-WLDX format."),
                              QMessageBox::Ok);
         return false;
     }
