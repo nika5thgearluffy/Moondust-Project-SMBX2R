@@ -21,6 +21,7 @@
 #include <editing/_scenes/level/lvl_history_manager.h>
 #include <common_features/json_settings_widget.h>
 #include <main_window/dock/lvl_events_box.h>
+#include <editing/_dialogs/itemselectdialog.h>
 
 #include <ui_mainwindow.h>
 #include <mainwindow.h>
@@ -248,7 +249,6 @@ void LvlSectionProps::initDefaults()
     ui->imageSelector->clear();
     ui->imageSelector->setMinimumHeight(80);
 
-
     eventsSctMus->clear(); //Music list in events
     eventsSctBg->clear();  //Background list in events
 
@@ -305,14 +305,6 @@ void LvlSectionProps::initDefaults()
         eventsSctBg->addItem(bgThumb, bgTitle, bgD.setup.id);
     }
 
-    PGE_DataArray<obj_music > &main_music_lvl = mw()->configs.main_music_lvl;
-    for(int i = 1; i < main_music_lvl.size(); i++)
-    {
-        const obj_music &mus = main_music_lvl[i];
-        ui->LVLPropsMusicNumber->addItem(mus.name, QString::number(mus.id));
-        eventsSctMus->addItem(mus.name, QString::number(mus.id));
-    }
-
     mw()->dock_LvlEvents->setEventToolsLocked(false);
     m_externalLock = false;
 
@@ -338,17 +330,6 @@ void LvlSectionProps::refreshFileData()
 
         ui->imageSelector->setItem(edit->LvlData.sections[edit->LvlData.CurSection].background);
 
-        ui->LVLPropsMusicNumber->setCurrentIndex(0);
-        for(int i = 0; i < ui->LVLPropsMusicNumber->count(); i++)
-        {
-            if((unsigned long)ui->LVLPropsMusicNumber->itemData(i).toInt() ==
-               edit->LvlData.sections[edit->LvlData.CurSection].music_id)
-            {
-                ui->LVLPropsMusicNumber->setCurrentIndex(i);
-                break;
-            }
-        }
-
         ui->LVLPropsWrapHorizontal->setChecked(edit->LvlData.sections[edit->LvlData.CurSection].wrap_h);
         ui->LVLPropsWrapVertical->setChecked(edit->LvlData.sections[edit->LvlData.CurSection].wrap_v);
         ui->LVLPropsOffScr->setChecked(edit->LvlData.sections[edit->LvlData.CurSection].OffScreenEn);
@@ -356,6 +337,7 @@ void LvlSectionProps::refreshFileData()
         ui->LVLPropsUnderWater->setChecked(edit->LvlData.sections[edit->LvlData.CurSection].underwater);
 
         QString musFile = edit->LvlData.sections[edit->LvlData.CurSection].music_file;
+
         ui->LVLPropsMusicCustom->setText(musFile);
         ui->LVLPropsMusicCustomEn->setChecked((edit->LvlData.sections[edit->LvlData.CurSection].music_id == mw()->configs.music_custom_id));
         ui->musicSetup->setVisible(CustomMusicSetup::settingsNeeded(musFile));
