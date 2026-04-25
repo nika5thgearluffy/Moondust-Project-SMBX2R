@@ -245,11 +245,12 @@ void LvlSectionProps::initDefaults()
     eventsSctBg->setMinimumHeight(80);
 
     LogDebug(QString("Set level Section Data"));
+
     ui->LVLPropsMusicNumber->setText("[Silence]");
     ui->imageSelector->clear();
     ui->imageSelector->setMinimumHeight(80);
 
-    eventsSctMus->clear(); //Music list in events
+    eventsSctMus->setText("[Silence]"); //Music list in events
     eventsSctBg->clear();  //Background list in events
 
     QPixmap empty(100, 70);
@@ -259,8 +260,6 @@ void LvlSectionProps::initDefaults()
 
     eventsSctBg->addItem(empty, tr("[No image]"), 0);
     eventsSctBg->setItem(0);
-    ui->LVLPropsMusicNumber->addItem(tr("[Silence]"), QVariant::fromValue<unsigned long>(0));
-    eventsSctMus->addItem(tr("[Silence]"), QVariant::fromValue<unsigned long>(0));
 
     PGE_DataArray<obj_BG > &main_bg = mw()->configs.main_bg;
     for(int i = 1; i < main_bg.size(); i++)
@@ -342,7 +341,7 @@ void LvlSectionProps::refreshFileData()
         ui->LVLPropsMusicCustomEn->setChecked((edit->LvlData.sections[edit->LvlData.CurSection].music_id == mw()->configs.music_custom_id));
         ui->musicSetup->setVisible(CustomMusicSetup::settingsNeeded(musFile));
 
-        if(ui->LVLPropsMusicCustom->isChecked())
+        if(ui->LVLPropsMusicCustomEn->isChecked())
         {
             ui->LVLPropsMusicNumber->setEnabled(false);
             ui->LVLPropsMusicNumber->setText("[Custom]");
