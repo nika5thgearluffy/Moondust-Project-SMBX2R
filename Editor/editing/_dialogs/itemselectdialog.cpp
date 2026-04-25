@@ -710,10 +710,19 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
             m_levelMusicModel->setSortSkipFirst(true);
             m_levelMusicModel->addElement(empMusic);
         }
+        
+        ItemBoxListModel::Element e;
+        e.pixmap = QPixmap(":/toolbar/playmusic.png");
+        e.name = "[Silence]";
+        e.description = QString("ID: %1").arg(0);
+        e.elementId = 0;
+        e.isCustom = false;
+        e.isValid = true;
+        m_levelMusicModel->addElement(e);
 
         for(int i = 1; i < conf->main_music_lvl.size(); i++)
         {
-            if (i == conf->music_custom_id || i == conf->music_custom_id2 || i == conf->music_custom_id3 || i == conf->music_custom_id4 || i == conf->music_custom_id5)
+            if (i == conf->music_custom_id)
             {
                 // Skip storing audio for custom music indexes
                 continue;
