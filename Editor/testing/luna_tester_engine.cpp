@@ -239,6 +239,9 @@ void LunaTesterEngine::init()
     QObject::connect(&g_intEngine, &IntEngineSignals::sendPlacingBGO,
                      this, &LunaTesterEngine::sendPlacingBGO);
 
+    QObject::connect(m_w, &MainWindow::engineCloseProperties,
+                     this, &LunaTesterEngine::sendBlankItem);
+
     QObject::connect(this, &LunaTesterEngine::testStarted,
                      m_w, &MainWindow::stopMusicForTesting);
     QObject::connect(this, &LunaTesterEngine::testFinished,
@@ -702,7 +705,10 @@ bool LunaTesterEngine::sendItemPlacing(const QString &rawData, PendingCmd ipcPen
     jsonObj["id"] = static_cast<int>(ipcPendCmd);
     jsonOut.setObject(jsonObj);
     
-    LogDebug("ENGINE: Place item command: " + rawData);
+    if(rawData == "")
+        LogDebug("ENGINE: Item closed.");
+    else
+        LogDebug("ENGINE: Place item command: " + rawData);
     
     if(writeToIPC(jsonOut))
     {
@@ -711,6 +717,19 @@ bool LunaTesterEngine::sendItemPlacing(const QString &rawData, PendingCmd ipcPen
     }
 
     return false;
+}
+
+void LunaTesterEngine::sendBlankItem()
+{
+    if(!isEngineActive())
+        return;
+
+    if(!m_caps.ipcCommands.contains("sendItemPlacing"))
+        return; // This command is not supported by this LunaLua build
+
+    QString nilValue = "";
+
+    sendItemPlacing(nilValue, PendC_SendPlacingItem);
 }
 
 bool LunaTesterEngine::sendSimpleCommand(const QString &cmd, PendingCmd ipcPendCmd)

@@ -195,6 +195,11 @@ public slots:
      * @param npc NPC data structure
      */
     void sendPlacingNPC(const LevelNPC &npc);
+    
+    /**
+     * @brief A hook for the properties close request
+     */
+    void sendBlankItem();
 
 #ifndef _WIN32
 private:
