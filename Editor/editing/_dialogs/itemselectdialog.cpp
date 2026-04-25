@@ -136,6 +136,12 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
     ui->Sel_List_Music->setModel(m_musboxModel);
     connect(ui->Sel_List_Music, &QListView::doubleClicked, this, &ItemSelectDialog::SelListMusic_itemDoubleClicked);
 
+    m_levelMusicModel = new ItemBoxListModel(this);
+    m_levelMusicModel->setCategoryAllKey(m_allLabel);
+    m_levelMusicModel->setGroupAllKey(m_allLabel);
+    ui->Sel_List_MusicLevel->setModel(m_levelMusicModel);
+    connect(ui->Sel_List_MusicLevel, &QListView::doubleClicked, this, &ItemSelectDialog::SelListMusic_itemDoubleClicked);
+
 
     makeFilterSetupMenu(m_blockFilterSetup, m_blockModel, ui->Sel_Text_FilterBlock);
     ui->Sel_FilterSetupBlock->setMenu(&m_blockFilterSetup);
@@ -161,6 +167,8 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
     makeFilterSetupMenu(m_musicFilterSetup, m_musboxModel, ui->Sel_Text_Music);
     ui->Sel_FilterSetupMusicBox->setMenu(&m_musicFilterSetup);
 
+    makeFilterSetupMenu(m_musicLevelFilterSetup, m_levelMusicModel, ui->Sel_Text_MusicLevel);
+    ui->Sel_FilterSetupMusicBoxLevel->setMenu(&m_musicLevelFilterSetup);
 
     QFont font;
     font.setItalic(true);
@@ -182,14 +190,15 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
 //    empLevel->setData(Qt::UserRole, QVariant(0));
 //    empMusic->setData(Qt::UserRole, QVariant(0));
 
-    ui->Sel_Tab_Block->setProperty("tabType",   TAB_BLOCK);
-    ui->Sel_Tab_BGO->setProperty("tabType",     TAB_BGO);
-    ui->Sel_Tab_NPC->setProperty("tabType",     TAB_NPC);
-    ui->Sel_Tab_Tile->setProperty("tabType",    TAB_TILE);
-    ui->Sel_Tab_Scenery->setProperty("tabType", TAB_SCENERY);
-    ui->Sel_Tab_Path->setProperty("tabType",    TAB_PATH);
-    ui->Sel_Tab_Level->setProperty("tabType",   TAB_LEVEL);
-    ui->Sel_Tab_Music->setProperty("tabType",   TAB_MUSIC);
+    ui->Sel_Tab_Block->setProperty("tabType",      TAB_BLOCK);
+    ui->Sel_Tab_BGO->setProperty("tabType",        TAB_BGO);
+    ui->Sel_Tab_NPC->setProperty("tabType",        TAB_NPC);
+    ui->Sel_Tab_Tile->setProperty("tabType",       TAB_TILE);
+    ui->Sel_Tab_Scenery->setProperty("tabType",    TAB_SCENERY);
+    ui->Sel_Tab_Path->setProperty("tabType",       TAB_PATH);
+    ui->Sel_Tab_Level->setProperty("tabType",      TAB_LEVEL);
+    ui->Sel_Tab_Music->setProperty("tabType",      TAB_MUSIC);
+    ui->Sel_Tab_LevelMusic->setProperty("tabType", TAB_MUSICLEVEL);
 
     bool blockTab   = tabs & TAB_BLOCK;
     bool bgoTab     = tabs & TAB_BGO;
@@ -199,6 +208,7 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
     bool pathTab    = tabs & TAB_PATH;
     bool levelTab   = tabs & TAB_LEVEL;
     bool musicTab   = tabs & TAB_MUSIC;
+    bool musicLevelTab = tabs & TAB_MUSICLEVEL;
     bool isCoinSel  = npcExtraData & NPCEXTRA_ISCOINSELECTED;
 
     if(!blockTab)
@@ -240,6 +250,11 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
         ui->Sel_TabCon_ItemType->removeTab(ui->Sel_TabCon_ItemType->indexOf(ui->Sel_Tab_Music));
     else if(currentTab == 0)
         currentTab = TAB_MUSIC;
+
+    if(!musicLevelTab)
+        ui->Sel_TabCon_ItemType->removeTab(ui->Sel_TabCon_ItemType->indexOf(ui->Sel_Tab_LevelMusic));
+    else if(currentTab == 0)
+        currentTab = TAB_MUSICLEVEL;
 
     if(npcExtraData & NPCEXTRA_WITHCOINS)
     {
@@ -682,6 +697,41 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
         m_musboxModel->addElementsEnd();
     }
 
+    if(musicLevelTab)
+    {
+        m_levelMusicModel->addElementsBegin();
+        if((noEmptyTypes & TAB_MUSICLEVEL) == 0)
+        {
+            ItemBoxListModel::Element empMusic;
+            empMusic.name = "[Silence]";
+            empMusic.isValid = true;
+            empMusic.pixmap = emptyPixmap(QSize(24, 24));
+            empMusic.description = "Silent music.";
+            m_levelMusicModel->setSortSkipFirst(true);
+            m_levelMusicModel->addElement(empMusic);
+        }
+
+        for(int i = 1; i < conf->main_music_lvl.size(); i++)
+        {
+            if (i == conf->music_custom_id || i == conf->music_custom_id2 || i == conf->music_custom_id3 || i == conf->music_custom_id4 || i == conf->music_custom_id5)
+            {
+                // Skip storing audio for custom music indexes
+                continue;
+            }
+            
+            obj_music &musicLevelItem = conf->main_music_lvl[i];
+            ItemBoxListModel::Element e;
+            e.pixmap = QPixmap(":/toolbar/playmusic.png");
+            e.name = musicLevelItem.name.isEmpty() ? QString("musicbox-%1").arg(musicLevelItem.id) : musicLevelItem.name;
+            e.description = QString("ID: %1").arg(musicLevelItem.id);
+            e.elementId = musicLevelItem.id;
+            e.isCustom = false;
+            e.isValid = true;
+            m_levelMusicModel->addElement(e);
+        }
+        m_levelMusicModel->addElementsEnd();
+    }
+
     on_Sel_TabCon_ItemType_currentChanged(ui->Sel_TabCon_ItemType->currentIndex());
 
     selectListItem(ui->Sel_List_Block, m_blockModel, curSelIDBlock);
@@ -689,6 +739,7 @@ ItemSelectDialog::ItemSelectDialog(DataConfig *conf, int tabs, int npcExtraData,
     selectListItem(ui->Sel_List_Scenery, m_sceneModel, curSelIDScenery);
     selectListItem(ui->Sel_List_Level, m_levelModel, curSelIDLevel);
     selectListItem(ui->Sel_List_Music, m_musboxModel, curSelIDMusic);
+    selectListItem(ui->Sel_List_MusicLevel, m_levelMusicModel, curSelIDMusic);
 
     selectListItem(ui->Sel_List_Tile, m_tileModel, curSelIDTile);
     selectListItem(ui->Sel_List_Path, m_pathModel, curSelIDPath);
@@ -743,6 +794,7 @@ void ItemSelectDialog::setMultiSelect(bool _multiselect)
     ui->Sel_List_Path->setSelectionMode(mode);
     ui->Sel_List_Level->setSelectionMode(mode);
     ui->Sel_List_Music->setSelectionMode(mode);
+    ui->Sel_List_MusicLevel->setSelectionMode(mode);
 
     if(_multiselect)//Clear selection on toggling multiselection
     {
@@ -755,6 +807,7 @@ void ItemSelectDialog::setMultiSelect(bool _multiselect)
         ui->Sel_List_Path->clearSelection();
         ui->Sel_List_Level->clearSelection();
         ui->Sel_List_Music->clearSelection();
+        ui->Sel_List_MusicLevel->clearSelection();
     }
 }
 
@@ -787,6 +840,7 @@ void ItemSelectDialog::on_Sel_TabCon_ItemType_currentChanged(int index)
     checkExtraDataVis(extraPathWid, ui->Sel_Tab_Path);
     checkExtraDataVis(extraLevelWid, ui->Sel_Tab_Level);
     checkExtraDataVis(extraMusicWid, ui->Sel_Tab_Music);
+    checkExtraDataVis(extraMusicLvlWid, ui->Sel_Tab_LevelMusic);
 
     if(updateLabelVis(extraBlockWid, ui->Sel_Tab_Block))
         return;
@@ -803,6 +857,8 @@ void ItemSelectDialog::on_Sel_TabCon_ItemType_currentChanged(int index)
     if(updateLabelVis(extraLevelWid, ui->Sel_Tab_Level))
         return;
     if(updateLabelVis(extraMusicWid, ui->Sel_Tab_Music))
+        return;
+    if(updateLabelVis(extraMusicLvlWid, ui->Sel_Tab_LevelMusic))
         return;
 }
 
@@ -876,6 +932,13 @@ void ItemSelectDialog::SelListMusic_itemDoubleClicked(const QModelIndex &index)
     on_Sel_DiaButtonBox_accepted();
 }
 
+void ItemSelectDialog::SelListMusicLevel_itemDoubleClicked(const QModelIndex &index)
+{
+    if(!m_levelMusicModel->data(index, ItemBoxListModel::ItemBox_ItemIsValid).toBool())
+        return;
+    on_Sel_DiaButtonBox_accepted();
+}
+
 void ItemSelectDialog::on_Sel_DiaButtonBox_accepted()
 {
     blockID = 0;
@@ -886,6 +949,7 @@ void ItemSelectDialog::on_Sel_DiaButtonBox_accepted()
     pathID = 0;
     levelID = 0;
     musicID = 0;
+    musicIDLevel = 0;
 
     isCoin = (npcCoins ? npcCoins->isChecked() : false);
 
@@ -896,6 +960,7 @@ void ItemSelectDialog::on_Sel_DiaButtonBox_accepted()
     pathID = extractID(ui->Sel_List_Path);
     levelID = extractID(ui->Sel_List_Level);
     musicID = extractID(ui->Sel_List_Music);
+    musicIDLevel = extractID(ui->Sel_List_MusicLevel);
 
     blockIDs = extractIDs(ui->Sel_List_Block);
     bgoIDs = extractIDs(ui->Sel_List_BGO);
@@ -905,6 +970,7 @@ void ItemSelectDialog::on_Sel_DiaButtonBox_accepted()
     pathIDs = extractIDs(ui->Sel_List_Path);
     levelIDs = extractIDs(ui->Sel_List_Level);
     musicIDs = extractIDs(ui->Sel_List_Music);
+    musicIDLevels = extractIDs(ui->Sel_List_MusicLevel);
 
     if((unsigned)musicID == conf->music_w_custom_id)
     {
@@ -952,6 +1018,7 @@ void ItemSelectDialog::on_Sel_DiaButtonBox_accepted()
     ui->Sel_Text_Path->disconnect();
     ui->Sel_Text_Level->disconnect();
     ui->Sel_Text_Music->disconnect();
+    ui->Sel_Text_MusicLevel->disconnect();
 
     this->accept();
 }

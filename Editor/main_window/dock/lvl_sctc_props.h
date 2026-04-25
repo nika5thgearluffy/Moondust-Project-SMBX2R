@@ -49,14 +49,14 @@ public slots:
 
     void loadMusic();
 
+    void on_LVLPropsMusicNumber_clicked();
+
 private slots:
     void on_LVLPropsWrapHorizontal_clicked(bool checked);
     void on_LVLPropsWrapVertical_clicked(bool checked);
     void on_LVLPropsOffScr_clicked(bool checked);
     void on_LVLPropsNoTBack_clicked(bool checked);
     void on_LVLPropsUnderWater_clicked(bool checked);
-
-    void on_LVLPropsMusicNumber_currentIndexChanged(int index);
     void on_LVLPropsMusicCustomEn_toggled(bool checked);
     void on_LVLPropsMusicCustomBrowse_clicked();
     void on_musicSetup_clicked();
